@@ -1,0 +1,331 @@
+import React, { useState, useContext } from 'react';
+import { UserContext } from '../App';
+
+const IntakeForm = ({ onComplete }) => {
+    const { setUserProfile } = useContext(UserContext);
+    const [step, setStep] = useState(1);
+    const totalSteps = 5;
+
+    // Form State
+    const [formData, setFormData] = useState({
+        // Step 1: Physical
+        height: 175,
+        weight: 70,
+        age: 30,
+        gender: 'onbekend',
+
+        // Step 2: Level
+        runsPerWeek: 3,
+        weeklyKm: 20,
+        longestRun: 10,
+        avgPaceMin: 6,
+        avgPaceSec: 0,
+        recentRace: '',
+
+        // Step 3: Goal
+        targetTimeHour: 1,
+        targetTimeMin: 50,
+
+        // Step 4: Schedule
+        targetDaysPerWeek: 3,
+        maxTimePerDay: 60,
+        preferredDays: {
+            1: true, // Mon
+            2: false, // Tue
+            3: true,  // Wed
+            4: false, // Thu
+            5: false, // Fri
+            6: true,  // Sat
+            0: false, // Sun (0 is Sunday in JS Date)
+        },
+        strengthTraining: false,
+        trainingStyle: 'balanced', // cautious, balanced, ambitious
+
+        // Step 5: Medical
+        injuries: false,
+        injuryDetails: '',
+    });
+
+    const handleChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
+    };
+
+    const handleDayChange = (day) => {
+        setFormData(prev => ({
+            ...prev,
+            preferredDays: {
+                ...prev.preferredDays,
+                [day]: !prev.preferredDays[day]
+            }
+        }));
+    };
+
+    const nextStep = () => {
+        if (step < totalSteps) setStep(step + 1);
+    };
+
+    const prevStep = () => {
+        if (step > 1) setStep(step - 1);
+    };
+
+    const submitForm = () => {
+        // Process and format data
+        const profile = {
+            physical: {
+                height: Number(formData.height),
+                weight: Number(formData.weight),
+                age: Number(formData.age),
+                gender: formData.gender,
+                weightHistory: [{ date: new Date().toISOString(), weight: Number(formData.weight) }]
+            },
+            currentLevel: {
+                runsPerWeek: Number(formData.runsPerWeek),
+                weeklyKm: Number(formData.weeklyKm),
+                longestRun: Number(formData.longestRun),
+                avgPaceSeconds: Number(formData.avgPaceMin) * 60 + Number(formData.avgPaceSec),
+                recentRace: formData.recentRace,
+            },
+            goal: {
+                raceDate: "2026-10-18T00:00:00.000Z",
+                targetTimeMinutes: Number(formData.targetTimeHour) * 60 + Number(formData.targetTimeMin),
+            },
+            preferences: {
+                trainDays: Number(formData.targetDaysPerWeek),
+                maxTimePerDay: Number(formData.maxTimePerDay),
+                preferredDays: Object.keys(formData.preferredDays).filter(d => formData.preferredDays[d]).map(Number),
+                strengthTraining: formData.strengthTraining,
+                style: formData.trainingStyle,
+            },
+            medical: {
+                injuries: formData.injuries,
+                injuryDetails: formData.injuryDetails
+            }
+        };
+
+        localStorage.setItem('amsterdam_coach_profile', JSON.stringify(profile));
+        setUserProfile(profile);
+        onComplete();
+    };
+
+    return (
+        <div className="glass-panel" style={{ padding: 'var(--space-6)', flex: 1, display: 'flex', flexDirection: 'column' }}>
+            <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h2 className="title-gradient">Stap {step} van {totalSteps}</h2>
+                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                    {step === 1 && "Fysieke Basis"}
+                    {step === 2 && "Huidig Niveau"}
+                    {step === 3 && "Het Doel"}
+                    {step === 4 && "Agenda & Voorkeur"}
+                    {step === 5 && "Veiligheid"}
+                </div>
+            </div>
+
+            <div style={{ flex: 1, overflowY: 'auto', paddingRight: '0.5rem', paddingBottom: '1rem' }}>
+
+                {/* STEP 1: PHYSICAL */}
+                {step === 1 && (
+                    <div className="fade-in">
+                        <div className="input-group">
+                            <label className="input-label">Lengte (cm)</label>
+                            <input type="number" name="height" className="input-field" value={formData.height} onChange={handleChange} />
+                        </div>
+                        <div className="input-group">
+                            <label className="input-label">Gewicht (kg)</label>
+                            <input type="number" name="weight" className="input-field" value={formData.weight} onChange={handleChange} step="0.1" />
+                        </div>
+                        <div className="input-group">
+                            <label className="input-label">Leeftijd</label>
+                            <input type="number" name="age" className="input-field" value={formData.age} onChange={handleChange} />
+                        </div>
+                        <div className="input-group">
+                            <label className="input-label">Geslacht (Optioneel)</label>
+                            <select name="gender" className="input-field" value={formData.gender} onChange={handleChange}>
+                                <option value="onbekend">Zeg ik liever niet</option>
+                                <option value="man">Man</option>
+                                <option value="vrouw">Vrouw</option>
+                            </select>
+                        </div>
+                    </div>
+                )}
+
+                {/* STEP 2: LEVEL */}
+                {step === 2 && (
+                    <div className="fade-in">
+                        <div className="input-group">
+                            <label className="input-label">Actuele km per week</label>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                <input type="range" name="weeklyKm" min="0" max="100" value={formData.weeklyKm} onChange={handleChange} />
+                                <span style={{ minWidth: '40px', fontWeight: 'bold' }}>{formData.weeklyKm} km</span>
+                            </div>
+                        </div>
+                        <div className="input-group">
+                            <label className="input-label">Aantal runs per week (nu)</label>
+                            <input type="number" name="runsPerWeek" className="input-field" value={formData.runsPerWeek} onChange={handleChange} min="0" max="7" />
+                        </div>
+                        <div className="input-group">
+                            <label className="input-label">Langste duurloop afgelopen maand (km)</label>
+                            <input type="number" name="longestRun" className="input-field" value={formData.longestRun} onChange={handleChange} step="0.5" />
+                        </div>
+                        <div className="input-group">
+                            <label className="input-label">Gemiddeld rustig tempo (min/km)</label>
+                            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                <input type="number" name="avgPaceMin" className="input-field" value={formData.avgPaceMin} onChange={handleChange} min="3" max="12" style={{ flex: 1 }} />
+                                <span>:</span>
+                                <input type="number" name="avgPaceSec" className="input-field" value={formData.avgPaceSec} onChange={handleChange} min="0" max="59" style={{ flex: 1 }} />
+                            </div>
+                        </div>
+                        <div className="input-group">
+                            <label className="input-label">Recente wedstrijd? (bijv. 5k in 25:00)</label>
+                            <input type="text" name="recentRace" className="input-field" value={formData.recentRace} onChange={handleChange} placeholder="Optioneel" />
+                        </div>
+                    </div>
+                )}
+
+                {/* STEP 3: GOAL */}
+                {step === 3 && (
+                    <div className="fade-in">
+                        <div style={{ padding: '1rem', backgroundColor: 'rgba(242, 79, 43, 0.1)', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem', border: '1px solid var(--primary-glow)' }}>
+                            <h3 style={{ color: 'var(--primary)', marginBottom: '0.5rem', fontSize: '1rem' }}>Doel: TCS Amsterdam Halve Marathon</h3>
+                            <p style={{ fontSize: '0.9rem', margin: 0 }}>Datum: Zondag 18 oktober 2026</p>
+                        </div>
+
+                        <div className="input-group">
+                            <label className="input-label">Gewenste eindtijd</label>
+                            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                <select name="targetTimeHour" className="input-field" value={formData.targetTimeHour} onChange={handleChange} style={{ flex: 1 }}>
+                                    <option value="1">1 uur</option>
+                                    <option value="2">2 uur</option>
+                                    <option value="3">3 uur</option>
+                                </select>
+                                <select name="targetTimeMin" className="input-field" value={formData.targetTimeMin} onChange={handleChange} style={{ flex: 1 }}>
+                                    <option value="0">00 min</option>
+                                    <option value="15">15 min</option>
+                                    <option value="30">30 min</option>
+                                    <option value="45">45 min</option>
+                                    <option value="50">50 min</option>
+                                </select>
+                            </div>
+                            <p style={{ fontSize: '0.8rem', marginTop: '0.5rem', color: 'var(--text-tertiary)' }}>
+                                We evalueren of dit realistisch is op basis van je huidige niveau.
+                            </p>
+                        </div>
+                    </div>
+                )}
+
+                {/* STEP 4: SCHEDULE */}
+                {step === 4 && (
+                    <div className="fade-in">
+                        <div className="input-group">
+                            <label className="input-label">Aantal trainingen per week (doel)</label>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                <input type="range" name="targetDaysPerWeek" min="2" max="6" value={formData.targetDaysPerWeek} onChange={handleChange} />
+                                <span style={{ minWidth: '40px', fontWeight: 'bold' }}>{formData.targetDaysPerWeek}x</span>
+                            </div>
+                        </div>
+
+                        <div className="input-group">
+                            <label className="input-label">Voorkeursdagen</label>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.5rem' }}>
+                                {['Zon', 'Maa', 'Din', 'Woe', 'Don', 'Vri', 'Zat'].map((day, idx) => (
+                                    <button
+                                        key={day}
+                                        style={{
+                                            padding: '0.5rem 0.75rem',
+                                            borderRadius: 'var(--radius-sm)',
+                                            border: formData.preferredDays[idx] ? '1px solid var(--primary)' : '1px solid var(--glass-border)',
+                                            backgroundColor: formData.preferredDays[idx] ? 'var(--primary-glow)' : 'transparent',
+                                            color: formData.preferredDays[idx] ? '#fff' : 'var(--text-secondary)',
+                                            cursor: 'pointer'
+                                        }}
+                                        onClick={() => handleDayChange(idx)}
+                                    >
+                                        {day}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="input-group">
+                            <label className="input-label">Ook krachttraining opnemen?</label>
+                            <select name="strengthTraining" className="input-field" value={formData.strengthTraining} onChange={handleChange}>
+                                <option value={false}>Nee, alleen hardlopen</option>
+                                <option value={true}>Ja, 1-2x per week core/kracht</option>
+                            </select>
+                        </div>
+
+                        <div className="input-group">
+                            <label className="input-label">Trainingsstijl</label>
+                            <select name="trainingStyle" className="input-field" value={formData.trainingStyle} onChange={handleChange}>
+                                <option value="cautious">Voorzichtig (risico mijdend, laag volume verhoging)</option>
+                                <option value="balanced">Gebalanceerd (standaard schema)</option>
+                                <option value="ambitious">Ambitieus (meer focus op snelheid en intervals)</option>
+                            </select>
+                        </div>
+                    </div>
+                )}
+
+                {/* STEP 5: MEDICAL */}
+                {step === 5 && (
+                    <div className="fade-in">
+                        <div className="input-group">
+                            <label className="input-label" style={{ color: 'var(--warning)' }}>Heb je actuele pijntjes of een blessuregeschiedenis?</label>
+                            <select name="injuries" className="input-field" value={formData.injuries} onChange={handleChange}>
+                                <option value={false}>Nee, ik ben helemaal fit</option>
+                                <option value={true}>Ja, daar moet rekening mee gehouden worden</option>
+                            </select>
+                        </div>
+
+                        {String(formData.injuries) === "true" && (
+                            <div className="input-group">
+                                <label className="input-label">Toelichting</label>
+                                <textarea
+                                    name="injuryDetails"
+                                    className="input-field"
+                                    value={formData.injuryDetails}
+                                    onChange={handleChange}
+                                    rows="3"
+                                    placeholder="Bijv. shin splints, lopersknie eerdere revalidatie..."
+                                />
+                            </div>
+                        )}
+
+                        <div style={{ marginTop: '2rem', padding: '1rem', backgroundColor: 'rgba(239, 68, 68, 0.1)', borderLeft: '4px solid var(--danger)', borderRadius: '0 var(--radius-sm) var(--radius-sm) 0' }}>
+                            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>
+                                <strong>Let op:</strong> Dit is een geautomatiseerde coach en is geen vervanging voor medisch advies. Bij aanhoudende pijn, consulteer een fysio. Pas je schema aan wanneer nodig.
+                            </p>
+                        </div>
+                    </div>
+                )}
+
+            </div>
+
+            {/* Button Footer */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid var(--glass-border)' }}>
+                <button
+                    className={`btn ${step === 1 ? 'btn-disabled' : 'btn-secondary'}`}
+                    onClick={prevStep}
+                    disabled={step === 1}
+                >
+                    Terug
+                </button>
+
+                {step < totalSteps ? (
+                    <button className="btn btn-primary" onClick={nextStep}>
+                        Volgende
+                    </button>
+                ) : (
+                    <button className="btn btn-primary" onClick={submitForm}>
+                        Genereer Schema
+                    </button>
+                )}
+            </div>
+
+        </div>
+    );
+};
+
+export default IntakeForm;
