@@ -39,7 +39,8 @@ const IntakeForm = ({ onComplete }) => {
             0: false, // Sun (0 is Sunday in JS Date)
         },
         strengthTraining: false,
-        trainingStyle: 'balanced', // cautious, balanced, ambitious
+        trainingStyle: 'balanced',
+        specialRequest: '',
 
         // Step 5: Medical
         injuries: false,
@@ -99,6 +100,7 @@ const IntakeForm = ({ onComplete }) => {
                 preferredDays: Object.keys(formData.preferredDays).filter(d => formData.preferredDays[d]).map(Number),
                 strengthTraining: formData.strengthTraining,
                 style: formData.trainingStyle,
+                specialRequest: formData.specialRequest,
             },
             medical: {
                 injuries: formData.injuries,
@@ -260,10 +262,22 @@ const IntakeForm = ({ onComplete }) => {
                         <div className="input-group">
                             <label className="input-label">Trainingsstijl</label>
                             <select name="trainingStyle" className="input-field" value={formData.trainingStyle} onChange={handleChange}>
-                                <option value="cautious">Voorzichtig (risico mijdend, laag volume verhoging)</option>
-                                <option value="balanced">Gebalanceerd (standaard schema)</option>
-                                <option value="ambitious">Ambitieus (meer focus op snelheid en intervals)</option>
+                                <option value="cautious">Voorzichtig (risico mijdend)</option>
+                                <option value="balanced">Gebalanceerd (standaard)</option>
+                                <option value="ambitious">Ambitieus (meer focus op snelheid)</option>
                             </select>
+                        </div>
+
+                        <div className="input-group">
+                            <label className="input-label">Speciale wensen voor de coach?</label>
+                            <textarea 
+                                name="specialRequest" 
+                                className="input-field" 
+                                value={formData.specialRequest} 
+                                onChange={handleChange} 
+                                rows="3" 
+                                placeholder="Bijv. 'Ik wil 2 weken voor de race 21km rennen' of 'Geen training op maandag'..."
+                            />
                         </div>
                     </div>
                 )}

@@ -136,6 +136,15 @@ export function generateTrainingPlan(userProfile) {
                 }
             }
 
+            // Apply Special Request Logic (e.g. 21km 2 weeks before)
+            const request = (prefs.specialRequest || "").toLowerCase();
+            if (workoutType === "Lange Duurloop" && w === totalWeeks - 2) {
+                if (request.includes("21km") || request.includes("21 km")) {
+                    distance = 21.1;
+                    coachNote = "SPECIAL REQUEST: Je wilde 2 weken voor de race je eerste 21km aantikken. Hier is 'ie!";
+                }
+            }
+
             workouts.push({
                 id: `w${w}-${i}`,
                 date: workoutDate.toISOString(),
