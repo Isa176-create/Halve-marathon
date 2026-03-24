@@ -98,9 +98,34 @@ export function generateTrainingPlan(userProfile) {
     let weekStartDate = new Date(START_DATE);
     weekStartDate.setDate(weekStartDate.getDate() - weekStartDate.getDay() + 1);
 
-    // Specia wens: 21km 2 weken voor race
+    // Speciale wens-detectie (breed opgezet zodat verschillende formuleringen werken)
     const specialRequest = (prefs.specialRequest || '').toLowerCase();
-    const wants21kmBeforeRace = specialRequest.includes('21km') || specialRequest.includes('21 km');
+
+    // Wil gebruiker 21km ALLEEN op de wedstrijddag? Dan max 18km vooraf.
+    const wantsOnlyRaceDay21 = (
+        specialRequest.includes('op de dag zelf') ||
+        specialRequest.includes('wedstrijddag') ||
+        specialRequest.includes('op de race dag') ||
+        specialRequest.includes('alleen op de marathon') ||
+        specialRequest.includes('alleen op de wedstrijd') ||
+        specialRequest.includes('pas op de dag') ||
+        specialRequest.includes('voor het eerst 21') ||
+        specialRequest.includes('eerste keer 21')
+    );
+
+    // Wil gebruiker 21km twee weken voor de race?
+    const wants21kmTwoWeeksBefore = (
+        !wantsOnlyRaceDay21 && (
+            specialRequest.includes('2 weken') ||
+            specialRequest.includes('twee weken')
+        ) && (
+            specialRequest.includes('21km') ||
+            specialRequest.includes('21 km')
+        )
+    );
+
+    // Bepaal de absolute max voor de lange duurloop vóór de wedstrijd
+    const MAX_LONG_RUN_BEFORE_RACE = wantsOnlyRaceDay21 ? 18 : 21.1;
 
     for (let w = 1; w <= totalWeeks; w++) {
         const weeksLeft = totalWeeks - w;
@@ -130,20 +155,26 @@ export function generateTrainingPlan(userProfile) {
         // ---- LANGE DUURLOOP PROGRESSIE ----
         let longRunThisWeek;
         if (isRaceWeek) {
-            longRunThisWeek = 21.1; // Wedstrijd
+            longRunThisWeek = 21.1; // Wedstrijd: altijd 21.1
         } else if (isTaper) {
             longRunThisWeek = weeksLeft === 1 ? 8 : 12; // Taperweken: licht
         } else if (isDeload) {
             longRunThisWeek = Math.max(3, currentLongRun * 0.7);
         } else {
-            // Opbouw: max 10% per week, en nooit meer dan 21.1
-            const longRunIncrement = effectiveStyle === 'cautious' ? 0.05 : 0.08;
-            longRunThisWeek = Math.min(21.1, currentLongRun * (1 + longRunIncrement));
+            // STRIKTE OPBOUW:
+            // - Max 8% toename ÉN max 1.5 km absoluut per week
+            // - Zo kan de lange run NOOIT met grote sprongen omhoog
+            const pctMax = effectiveStyle === 'cautious' ? 0.05 : 0.08;
+            const absoluteMaxStep = effectiveStyle === 'cautious' ? 1.0 : 1.5; // km per week
+            const byPct = currentLongRun * (1 + pctMax);
+            const byAbsolute = currentLongRun + absoluteMaxStep;
+            // Neem altijd het LAAGSTE van de twee (veiligste opbouw)
+            longRunThisWeek = Math.min(byPct, byAbsolute, MAX_LONG_RUN_BEFORE_RACE);
         }
         longRunThisWeek = Math.round(longRunThisWeek * 10) / 10;
 
-        // Speciale wens: 21km 2 weken voor race
-        if (wants21kmBeforeRace && weeksLeft === 2 && !isTaper) {
+        // Speciale wens: 21km twee weken voor de race
+        if (wants21kmTwoWeeksBefore && weeksLeft === 2 && !isTaper) {
             longRunThisWeek = 21.1;
         }
 
@@ -174,9 +205,12 @@ export function generateTrainingPlan(userProfile) {
             }
             // ---- LANGE DUURLOOP ----
             else if (isLastDay && !isRaceWeek) {
-                workoutType = wants21kmBeforeRace && weeksLeft === 2 && longRunThisWeek >= 21
+                const isSpecialWeek = wants21kmTwoWeeksBefore && weeksLeft === 2 && longRunThisWeek >= 21;
+                workoutType = isSpecialWeek
                     ? '⭐ Lange Duurloop (Speciale Wens: 21km!)'
-                    : 'Lange Duurloop';
+                    : wantsOnlyRaceDay21
+                        ? 'Lange Duurloop (max ' + MAX_LONG_RUN_BEFORE_RACE + ' km voor race)'
+                        : 'Lange Duurloop';
                 distance = longRunThisWeek;
                 targetPace = longRunPace;
                 coachNote = isDeload
