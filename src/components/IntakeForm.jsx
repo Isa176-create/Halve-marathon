@@ -38,7 +38,6 @@ const IntakeForm = ({ onComplete }) => {
             6: true,  // Sat
             0: false, // Sun
         },
-        strengthTraining: false,
         trainingStyle: 'balanced',
         specialRequest: '',
 
@@ -99,7 +98,6 @@ const IntakeForm = ({ onComplete }) => {
                 trainDays: Number(formData.targetDaysPerWeek),
                 maxTimePerDay: Number(formData.maxTimePerDay),
                 preferredDays: Object.keys(formData.preferredDays).filter(d => formData.preferredDays[d]).map(Number),
-                strengthTraining: formData.strengthTraining,
                 style: formData.trainingStyle,
                 specialRequest: formData.specialRequest,
             },
@@ -262,13 +260,6 @@ const IntakeForm = ({ onComplete }) => {
                             </div>
                         </div>
 
-                        <div className="input-group">
-                            <label className="input-label">Ook krachttraining opnemen?</label>
-                            <select name="strengthTraining" className="input-field" value={formData.strengthTraining} onChange={handleChange}>
-                                <option value={false}>Nee, alleen hardlopen</option>
-                                <option value={true}>Ja, 1-2x per week core/kracht</option>
-                            </select>
-                        </div>
 
                         <div className="input-group">
                             <label className="input-label">Trainingsstijl</label>
