@@ -21,7 +21,6 @@ const IntakeForm = ({ onComplete }) => {
         recentMaxRun: '',
         avgPaceMin: '',
         avgPaceSec: '00',
-        recentRace: '',
 
         // Step 3: Goal
         targetTimeHour: 2,
@@ -195,10 +194,6 @@ const IntakeForm = ({ onComplete }) => {
                                 <input type="number" name="avgPaceSec" className="input-field" value={formData.avgPaceSec} onChange={handleChange} min="0" max="59" style={{ flex: 1 }} placeholder="sec" />
                             </div>
                             <small style={{ color: 'var(--text-tertiary)', fontSize: '0.8rem' }}>Bijv. 7:30 = 7 minuten en 30 seconden per km.</small>
-                        </div>
-                        <div className="input-group">
-                            <label className="input-label">Recente wedstrijd of test? (optioneel)</label>
-                            <input type="text" name="recentRace" className="input-field" value={formData.recentRace} onChange={handleChange} placeholder="bijv. 5km in 30:00" />
                         </div>
                     </div>
                 )}

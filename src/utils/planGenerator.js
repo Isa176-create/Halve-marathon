@@ -235,7 +235,12 @@ export function generateTrainingPlan(userProfile) {
             else {
                 const restKm = Math.max(0, currentVolumeKm - longRunThisWeek);
                 const otherRuns = trainDays - 1;
-                distance = Math.round((restKm / otherRuns) * 10) / 10;
+                let rawDistance = Math.round((restKm / otherRuns) * 10) / 10;
+
+                // HARDE REGEL: een rustige duurloop mag NOOIT langer zijn dan de lange duurloop
+                // Cap op (longRunThisWeek - 1km) zodat de lange duurloop altijd de langste is
+                const maxEasyDistance = Math.max(3, longRunThisWeek - 1);
+                distance = Math.min(rawDistance, maxEasyDistance);
 
                 if (distance <= 4 || isDeload) {
                     workoutType = 'Herstelrun';
