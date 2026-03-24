@@ -9,22 +9,23 @@ const IntakeForm = ({ onComplete }) => {
     // Form State
     const [formData, setFormData] = useState({
         // Step 1: Physical
-        height: 175,
-        weight: 70,
-        age: 30,
+        height: '',
+        weight: '',
+        age: '',
         gender: 'onbekend',
 
         // Step 2: Level
-        runsPerWeek: 3,
-        weeklyKm: 20,
-        longestRun: 10,
-        avgPaceMin: 6,
-        avgPaceSec: 0,
+        runsPerWeek: '',
+        weeklyKm: '',
+        longestRunEver: '',
+        recentMaxRun: '',
+        avgPaceMin: '',
+        avgPaceSec: '00',
         recentRace: '',
 
         // Step 3: Goal
-        targetTimeHour: 1,
-        targetTimeMin: 50,
+        targetTimeHour: 2,
+        targetTimeMin: 0,
 
         // Step 4: Schedule
         targetDaysPerWeek: 3,
@@ -36,7 +37,7 @@ const IntakeForm = ({ onComplete }) => {
             4: false, // Thu
             5: false, // Fri
             6: true,  // Sat
-            0: false, // Sun (0 is Sunday in JS Date)
+            0: false, // Sun
         },
         strengthTraining: false,
         trainingStyle: 'balanced',
@@ -74,7 +75,6 @@ const IntakeForm = ({ onComplete }) => {
     };
 
     const submitForm = () => {
-        // Process and format data
         const profile = {
             physical: {
                 height: Number(formData.height),
@@ -86,7 +86,9 @@ const IntakeForm = ({ onComplete }) => {
             currentLevel: {
                 runsPerWeek: Number(formData.runsPerWeek),
                 weeklyKm: Number(formData.weeklyKm),
-                longestRun: Number(formData.longestRun),
+                longestRunEver: Number(formData.longestRunEver),   // Ooit gelopen
+                longestRun: Number(formData.recentMaxRun),         // Afgelopen 4 weken (zwaarder gewogen)
+                recentMaxRun: Number(formData.recentMaxRun),       // Zelfde, voor duidelijkheid in generator
                 avgPaceSeconds: Number(formData.avgPaceMin) * 60 + Number(formData.avgPaceSec),
                 recentRace: formData.recentRace,
             },
@@ -158,31 +160,45 @@ const IntakeForm = ({ onComplete }) => {
                 {step === 2 && (
                     <div className="fade-in">
                         <div className="input-group">
-                            <label className="input-label">Actuele km per week</label>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                <input type="range" name="weeklyKm" min="0" max="100" value={formData.weeklyKm} onChange={handleChange} />
-                                <span style={{ minWidth: '40px', fontWeight: 'bold' }}>{formData.weeklyKm} km</span>
-                            </div>
+                            <label className="input-label">Gemiddeld km per week (afgelopen 4 weken) *</label>
+                            <input
+                                type="number"
+                                name="weeklyKm"
+                                className="input-field"
+                                value={formData.weeklyKm}
+                                onChange={handleChange}
+                                placeholder="bijv. 15"
+                                min="0"
+                                max="150"
+                            />
+                            <small style={{ color: 'var(--text-tertiary)', fontSize: '0.8rem' }}>Dit is de belangrijkste waarde voor je schema.</small>
                         </div>
                         <div className="input-group">
-                            <label className="input-label">Aantal runs per week (nu)</label>
-                            <input type="number" name="runsPerWeek" className="input-field" value={formData.runsPerWeek} onChange={handleChange} min="0" max="7" />
+                            <label className="input-label">Aantal runs per week (afgelopen 4 weken) *</label>
+                            <input type="number" name="runsPerWeek" className="input-field" value={formData.runsPerWeek} onChange={handleChange} min="0" max="7" placeholder="bijv. 3" />
                         </div>
                         <div className="input-group">
-                            <label className="input-label">Langste duurloop afgelopen maand (km)</label>
-                            <input type="number" name="longestRun" className="input-field" value={formData.longestRun} onChange={handleChange} step="0.5" />
+                            <label className="input-label">Langste run afgelopen 4 weken (km) *</label>
+                            <input type="number" name="recentMaxRun" className="input-field" value={formData.recentMaxRun} onChange={handleChange} step="0.5" placeholder="bijv. 8" />
+                            <small style={{ color: 'var(--text-tertiary)', fontSize: '0.8rem' }}>⚠️ Dit bepaalt waar je langste duurloop in week 1 begint.</small>
                         </div>
                         <div className="input-group">
-                            <label className="input-label">Gemiddeld rustig tempo (min/km)</label>
+                            <label className="input-label">Langste run ooit (km)</label>
+                            <input type="number" name="longestRunEver" className="input-field" value={formData.longestRunEver} onChange={handleChange} step="0.5" placeholder="bijv. 12 (optioneel)" />
+                            <small style={{ color: 'var(--text-tertiary)', fontSize: '0.8rem' }}>Minder belangrijk — de recente afstand weegt zwaarder.</small>
+                        </div>
+                        <div className="input-group">
+                            <label className="input-label">Comfortabel hardlooptempo (min : sec per km) *</label>
                             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                                <input type="number" name="avgPaceMin" className="input-field" value={formData.avgPaceMin} onChange={handleChange} min="3" max="12" style={{ flex: 1 }} />
-                                <span>:</span>
-                                <input type="number" name="avgPaceSec" className="input-field" value={formData.avgPaceSec} onChange={handleChange} min="0" max="59" style={{ flex: 1 }} />
+                                <input type="number" name="avgPaceMin" className="input-field" value={formData.avgPaceMin} onChange={handleChange} min="3" max="15" style={{ flex: 1 }} placeholder="min" />
+                                <span style={{ fontWeight: 'bold' }}>:</span>
+                                <input type="number" name="avgPaceSec" className="input-field" value={formData.avgPaceSec} onChange={handleChange} min="0" max="59" style={{ flex: 1 }} placeholder="sec" />
                             </div>
+                            <small style={{ color: 'var(--text-tertiary)', fontSize: '0.8rem' }}>Bijv. 7:30 = 7 minuten en 30 seconden per km.</small>
                         </div>
                         <div className="input-group">
-                            <label className="input-label">Recente wedstrijd? (bijv. 5k in 25:00)</label>
-                            <input type="text" name="recentRace" className="input-field" value={formData.recentRace} onChange={handleChange} placeholder="Optioneel" />
+                            <label className="input-label">Recente wedstrijd of test? (optioneel)</label>
+                            <input type="text" name="recentRace" className="input-field" value={formData.recentRace} onChange={handleChange} placeholder="bijv. 5km in 30:00" />
                         </div>
                     </div>
                 )}
