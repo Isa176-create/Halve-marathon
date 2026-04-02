@@ -211,21 +211,11 @@ const StravaConnect = () => {
             borderColor: 'rgba(252,76,2,0.3)',
           }}
         >
-          {session.athlete.profile && (
-            <img
-              src={session.athlete.profile}
-              alt="Profiel"
-              style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover' }}
-            />
-          )}
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600 }}>
               {session.athlete.firstname} {session.athlete.lastname}
             </div>
-            <div style={{ fontSize: '0.8rem', color: '#FC4C02', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="#FC4C02">
-                <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169" />
-              </svg>
+            <div style={{ fontSize: '0.8rem', color: '#FC4C02' }}>
               Verbonden met Strava
             </div>
           </div>
@@ -296,7 +286,7 @@ const StravaConnect = () => {
                     <div style={{ flex: 1 }}>
                       <div style={{ fontWeight: 600, fontSize: '0.95rem', marginBottom: '0.25rem' }}>{run.name}</div>
                       <div style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>
-                        {new Date(run.date).toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' })}
+                        {new Date(run.date).toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: '1rem', textAlign: 'right' }}>

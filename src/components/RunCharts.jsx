@@ -17,101 +17,134 @@ const secondsToPace = (secs) => {
 
 // SVG Bar Chart voor kilometers
 const KmBarChart = ({ runs }) => {
+  const [selectedIdx, setSelectedIdx] = useState(null);
   const data = [...runs].reverse(); // chronologisch
   const maxKm = Math.max(...data.map((r) => parseFloat(r.distanceKm)));
   const chartH = 130;
   const chartW = 300;
   const barW = Math.max(8, (chartW / data.length) * 0.6);
   const gap = chartW / data.length;
+  const selected = selectedIdx !== null ? data[selectedIdx] : null;
 
   return (
-    <svg
-      viewBox={`0 0 ${chartW} ${chartH + 30}`}
-      style={{ width: '100%', maxWidth: chartW, overflow: 'visible' }}
-    >
-      {/* Gridlijnen */}
-      {[0.25, 0.5, 0.75, 1].map((frac) => (
-        <line
-          key={frac}
-          x1={0}
-          y1={chartH - chartH * frac}
-          x2={chartW}
-          y2={chartH - chartH * frac}
-          stroke="rgba(255,255,255,0.06)"
-          strokeWidth={1}
-        />
-      ))}
+    <div>
+      {/* Tooltip bij geselecteerde balk */}
+      {selected && (
+        <div style={{
+          backgroundColor: 'rgba(252,76,2,0.15)',
+          border: '1px solid rgba(252,76,2,0.4)',
+          borderRadius: 'var(--radius-sm)',
+          padding: '0.6rem 0.9rem',
+          marginBottom: '0.75rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          fontSize: '0.85rem',
+        }}>
+          <div>
+            <div style={{ color: 'var(--text-tertiary)', fontSize: '0.75rem' }}>
+              {new Date(selected.date).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}
+            </div>
+            <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{selected.name}</div>
+          </div>
+          <div style={{ display: 'flex', gap: '1rem', textAlign: 'right' }}>
+            <div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)' }}>Afstand</div>
+              <div style={{ fontWeight: 700, color: '#FC4C02' }}>{selected.distanceKm} km</div>
+            </div>
+            <div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)' }}>Pace</div>
+              <div style={{ fontWeight: 700, color: '#FC4C02' }}>{selected.pacePerKm}/km</div>
+            </div>
+          </div>
+        </div>
+      )}
 
-      {/* Bars */}
-      {data.map((run, i) => {
-        const km = parseFloat(run.distanceKm);
-        const barH = (km / maxKm) * chartH;
-        const x = i * gap + gap / 2 - barW / 2;
-        const y = chartH - barH;
-        const isLong = km >= 15;
+      <svg
+        viewBox={`0 0 ${chartW} ${chartH + 30}`}
+        style={{ width: '100%', maxWidth: chartW, overflow: 'visible' }}
+      >
+        {/* Gridlijnen */}
+        {[0.25, 0.5, 0.75, 1].map((frac) => (
+          <line
+            key={frac}
+            x1={0}
+            y1={chartH - chartH * frac}
+            x2={chartW}
+            y2={chartH - chartH * frac}
+            stroke="rgba(255,255,255,0.06)"
+            strokeWidth={1}
+          />
+        ))}
 
-        return (
-          <g key={run.id}>
-            {/* Gradient definitie per bar */}
-            <defs>
-              <linearGradient id={`bar-grad-${i}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={isLong ? '#ffb347' : '#FC4C02'} stopOpacity="1" />
-                <stop offset="100%" stopColor={isLong ? '#FC4C02' : '#f24f2b'} stopOpacity="0.6" />
-              </linearGradient>
-            </defs>
-            <rect
-              x={x}
-              y={y}
-              width={barW}
-              height={barH}
-              rx={3}
-              fill={`url(#bar-grad-${i})`}
-            />
-            {/* Datum label onderaan (elke 3e) */}
-            {i % 3 === 0 && (
-              <text
-                x={i * gap + gap / 2}
-                y={chartH + 18}
-                textAnchor="middle"
-                fill="rgba(255,255,255,0.4)"
-                fontSize="9"
-              >
-                {new Date(run.date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}
-              </text>
-            )}
-            {/* Waarde boven de bar (alleen voor de hoogste) */}
-            {km === maxKm && (
-              <text
-                x={i * gap + gap / 2}
-                y={y - 4}
-                textAnchor="middle"
-                fill="#FC4C02"
-                fontSize="9"
-                fontWeight="bold"
-              >
-                {km}km
-              </text>
-            )}
-          </g>
-        );
-      })}
+        {/* Bars */}
+        {data.map((run, i) => {
+          const km = parseFloat(run.distanceKm);
+          const barH = (km / maxKm) * chartH;
+          const x = i * gap + gap / 2 - barW / 2;
+          const y = chartH - barH;
+          const isLong = km >= 15;
+          const isSelected = selectedIdx === i;
 
-      {/* Y-as labels */}
-      {[0, Math.round(maxKm / 2), Math.round(maxKm)].map((val, i) => (
-        <text
-          key={i}
-          x={-4}
-          y={chartH - (val / maxKm) * chartH + 4}
-          textAnchor="end"
-          fill="rgba(255,255,255,0.3)"
-          fontSize="9"
-        >
-          {val}
-        </text>
-      ))}
-    </svg>
+          return (
+            <g
+              key={run.id}
+              onClick={() => setSelectedIdx(isSelected ? null : i)}
+              style={{ cursor: 'pointer' }}
+            >
+              {/* Klikbaar gebied (groter dan de balk zelf) */}
+              <rect x={x - 4} y={0} width={barW + 8} height={chartH + 30} fill="transparent" />
+              <defs>
+                <linearGradient id={`bar-grad-${i}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={isLong ? '#ffb347' : '#FC4C02'} stopOpacity={isSelected ? '1' : '0.85'} />
+                  <stop offset="100%" stopColor={isLong ? '#FC4C02' : '#f24f2b'} stopOpacity={isSelected ? '0.9' : '0.6'} />
+                </linearGradient>
+              </defs>
+              <rect
+                x={x}
+                y={y}
+                width={barW}
+                height={barH}
+                rx={3}
+                fill={`url(#bar-grad-${i})`}
+                stroke={isSelected ? 'white' : 'none'}
+                strokeWidth={isSelected ? 1 : 0}
+                strokeOpacity={0.6}
+              />
+              {/* Datum label onderaan (elke 3e) */}
+              {i % 3 === 0 && (
+                <text
+                  x={i * gap + gap / 2}
+                  y={chartH + 18}
+                  textAnchor="middle"
+                  fill={isSelected ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.4)'}
+                  fontSize="9"
+                >
+                  {new Date(run.date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}
+                </text>
+              )}
+            </g>
+          );
+        })}
+
+        {/* Y-as labels */}
+        {[0, Math.round(maxKm / 2), Math.round(maxKm)].map((val, i) => (
+          <text
+            key={i}
+            x={-4}
+            y={chartH - (val / maxKm) * chartH + 4}
+            textAnchor="end"
+            fill="rgba(255,255,255,0.3)"
+            fontSize="9"
+          >
+            {val}
+          </text>
+        ))}
+      </svg>
+    </div>
   );
 };
+
 
 // SVG Line Chart voor pace
 const PaceLineChart = ({ runs }) => {
