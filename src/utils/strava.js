@@ -1,7 +1,7 @@
 // utils/strava.js
 // Strava API hulpfuncties voor de Amsterdam Marathon Coach app
 
-const STRAVA_CLIENT_ID = import.meta.env.VITE_STRAVA_CLIENT_ID;
+const STRAVA_CLIENT_ID = '219629'; // Public - veilig om te hardcoden (staat sowieso zichtbaar in de OAuth URL)
 const STORAGE_KEY = 'amsterdam_coach_strava';
 
 // Bouw de Strava OAuth redirect URL
