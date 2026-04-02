@@ -7,6 +7,7 @@ import {
   clearStravaSession,
   fetchRecentRuns,
 } from '../utils/strava';
+import RunCharts from './RunCharts';
 
 const StravaConnect = () => {
   const [session, setSession] = useState(null);
@@ -257,6 +258,9 @@ const StravaConnect = () => {
           {error}
         </div>
       )}
+
+      {/* Grafieken */}
+      {runs.length >= 2 && <RunCharts runs={runs} />}
 
       {/* Recente runs */}
       <div>
