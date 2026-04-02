@@ -275,7 +275,7 @@ const RunCharts = ({ runs }) => {
       {/* Grafiek panel */}
       <div
         className="glass-panel"
-        style={{ padding: 'var(--space-4)', background: 'rgba(0,0,0,0.3)' }}
+        style={{ padding: 'var(--space-4)', background: 'rgba(255,255,255,0.06)' }}
       >
         {/* Tab switcher */}
         <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem' }}>
