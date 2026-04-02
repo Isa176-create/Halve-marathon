@@ -2,6 +2,13 @@ import React, { useState } from 'react';
 import Dashboard from './Dashboard';
 import Schedule from './Schedule';
 import Profile from './Profile';
+import StravaConnect from './StravaConnect';
+
+const StravaIcon = ({ active }) => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill={active ? '#FC4C02' : 'currentColor'}>
+        <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169" />
+    </svg>
+);
 
 const MainLayout = () => {
     const [activeTab, setActiveTab] = useState('dashboard');
@@ -12,6 +19,7 @@ const MainLayout = () => {
             <div style={{ flex: 1, overflowY: 'auto' }}>
                 {activeTab === 'dashboard' && <Dashboard />}
                 {activeTab === 'schedule' && <Schedule />}
+                {activeTab === 'strava' && <StravaConnect />}
                 {activeTab === 'profile' && <Profile />}
             </div>
 
@@ -57,6 +65,19 @@ const MainLayout = () => {
                 >
                     <span style={{ fontSize: '1.25rem' }}>📅</span>
                     Schema
+                </button>
+
+                <button
+                    onClick={() => setActiveTab('strava')}
+                    style={{
+                        background: 'none', border: 'none',
+                        color: activeTab === 'strava' ? '#FC4C02' : 'var(--text-tertiary)',
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
+                        fontSize: '0.75rem', fontWeight: activeTab === 'strava' ? 600 : 400, cursor: 'pointer'
+                    }}
+                >
+                    <StravaIcon active={activeTab === 'strava'} />
+                    Strava
                 </button>
 
                 <button
