@@ -110,7 +110,11 @@ const StravaConnect = () => {
           }}
         >
           {/* Strava logo */}
-          <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🏃</div>
+          <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'center' }}>
+            <svg width="60" height="60" viewBox="0 0 24 24" fill="#FC4C02">
+              <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169" />
+            </svg>
+          </div>
           <h2 style={{ fontSize: '1.4rem', marginBottom: '0.5rem' }}>Verbind met Strava</h2>
           <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', lineHeight: 1.6 }}>
             Koppel je Strava account en zie je trainingen direct in de app.
