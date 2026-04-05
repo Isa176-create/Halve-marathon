@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
 import { PlanContext, UserContext } from '../App';
-import { generateTrainingPlan } from '../utils/planGenerator';
+import { generateTrainingPlanWeek } from '../utils/planGenerator';
 
 const Profile = () => {
     const { userProfile, setUserProfile } = useContext(UserContext);
@@ -19,16 +19,19 @@ const Profile = () => {
         }
     };
 
-    const handleRegeneratePlan = () => {
+    const handleRegeneratePlan = async () => {
         setUpdating(true);
-        // Generate new plan with updated logic
-        setTimeout(() => {
-            const newPlan = generateTrainingPlan(userProfile);
+        try {
+            const newPlan = await generateTrainingPlanWeek(userProfile, 1, null);
             setTrainingPlan(newPlan);
             localStorage.setItem('marathon_coach_plan', JSON.stringify(newPlan));
             setUpdating(false);
-            alert("Je schema is geactualiseerd met de nieuwe coach-instructies!");
-        }, 1000);
+            alert("Je eerste AI-week is succesvol met de nieuwe coach-instructies gegenereerd!");
+        } catch (e) {
+            console.error(e);
+            alert("Fout bij genereren: " + e.message);
+            setUpdating(false);
+        }
     };
 
     const getCompletedCount = () => {

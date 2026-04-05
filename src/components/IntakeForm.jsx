@@ -17,6 +17,7 @@ const IntakeForm = ({ onComplete }) => {
         // Step 2: Level
         runsPerWeek: '',
         weeklyKm: '',
+        seasonKm: '',
         longestRunEver: '',
         recentMaxRun: '',
         avgPaceMin: '',
@@ -87,6 +88,7 @@ const IntakeForm = ({ onComplete }) => {
             currentLevel: {
                 runsPerWeek: Number(formData.runsPerWeek),
                 weeklyKm: Number(formData.weeklyKm),
+                seasonKm: Number(formData.seasonKm),
                 longestRunEver: Number(formData.longestRunEver),   // Ooit gelopen
                 longestRun: Number(formData.recentMaxRun),         // Afgelopen 4 weken (zwaarder gewogen)
                 recentMaxRun: Number(formData.recentMaxRun),       // Zelfde, voor duidelijkheid in generator
@@ -178,6 +180,11 @@ const IntakeForm = ({ onComplete }) => {
                         <div className="input-group">
                             <label className="input-label">Aantal runs per week (afgelopen 4 weken) *</label>
                             <input type="number" name="runsPerWeek" className="input-field" value={formData.runsPerWeek} onChange={handleChange} min="0" max="7" placeholder="bijv. 3" />
+                        </div>
+                        <div className="input-group">
+                            <label className="input-label">Km gelopen dit seizoen (ongeveer) *</label>
+                            <input type="number" name="seasonKm" className="input-field" value={formData.seasonKm} onChange={handleChange} min="0" placeholder="bijv. 150" />
+                            <small style={{ color: 'var(--text-tertiary)', fontSize: '0.8rem' }}>Geeft de coach een beeld van je basis.</small>
                         </div>
                         <div className="input-group">
                             <label className="input-label">Langste run afgelopen 4 weken (km) *</label>

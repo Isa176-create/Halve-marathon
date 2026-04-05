@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import IntakeForm from './components/IntakeForm';
 import Dashboard from './components/Dashboard';
 import MainLayout from './components/MainLayout';
-import { generateTrainingPlan } from './utils/planGenerator';
+import { generateTrainingPlanWeek } from './utils/planGenerator';
 
 // Context
 export const UserContext = React.createContext();
@@ -12,6 +12,7 @@ function App() {
   const [userProfile, setUserProfile] = useState(null);
   const [trainingPlan, setTrainingPlan] = useState(null);
   const [view, setView] = useState('welcome'); // welcome, intake, generating, dashboard
+  const [generateError, setGenerateError] = useState(null);
 
   // Initial load
   useEffect(() => {
@@ -25,23 +26,26 @@ function App() {
     }
   }, []);
 
-  const handleIntakeComplete = () => {
+  const handleIntakeComplete = async () => {
     setView('generating');
+    setGenerateError(null);
 
-    // Simulate thinking time for effect
-    setTimeout(() => {
-      // UserProfile is already in Context & localStorage thanks to IntakeForm
+    try {
       const profileStr = localStorage.getItem('marathon_coach_profile');
       if (profileStr) {
         const profile = JSON.parse(profileStr);
-        const plan = generateTrainingPlan(profile);
+        // Genereer week 1 asynchrone AI call
+        const plan = await generateTrainingPlanWeek(profile, 1, null);
 
         setTrainingPlan(plan);
         localStorage.setItem('marathon_coach_plan', JSON.stringify(plan));
-
         setView('dashboard');
       }
-    }, 2000);
+    } catch (err) {
+      console.error(err);
+      setGenerateError(err.message || 'Er is een fout opgetreden bij het verbinden met de API.');
+      // Fallback: stay on generating view but show error, maybe a button to retry
+    }
   };
 
   return (
@@ -71,9 +75,28 @@ function App() {
 
           {view === 'generating' && (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-              <div className="pulse" style={{ width: 50, height: 50, borderRadius: '50%', backgroundColor: 'var(--primary)', marginBottom: '1rem' }}></div>
-              <h2 className="title-gradient">Schema berekenen...</h2>
-              <p style={{ marginTop: '1rem', color: 'var(--text-secondary)' }}>Coach stelt jouw slimme pad richting je doel samen.</p>
+              {!generateError ? (
+                  <>
+                    <div className="pulse" style={{ width: 50, height: 50, borderRadius: '50%', backgroundColor: 'var(--primary)', marginBottom: '1rem' }}></div>
+                    <h2 className="title-gradient">Schema berekenen...</h2>
+                    <p style={{ marginTop: '1rem', color: 'var(--text-secondary)', textAlign: 'center', padding: '0 1rem' }}>
+                      De AI coach analyseert je profiel en stelt je eerste week samen...
+                    </p>
+                  </>
+              ) : (
+                  <>
+                    <h2 style={{ color: 'var(--danger)' }}>Fout bij genereren</h2>
+                    <p style={{ marginTop: '1rem', color: 'var(--text-secondary)', textAlign: 'center', padding: '0 1rem' }}>
+                      {generateError}
+                    </p>
+                    <button className="btn btn-secondary" style={{ marginTop: '2rem' }} onClick={() => setView('intake')}>
+                      Terug naar intake
+                    </button>
+                    <button className="btn btn-primary" style={{ marginTop: '1rem' }} onClick={handleIntakeComplete}>
+                      Probeer opnieuw
+                    </button>
+                  </>
+              )}
             </div>
           )}
 
