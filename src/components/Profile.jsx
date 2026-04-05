@@ -13,8 +13,8 @@ const Profile = () => {
     const handleReset = () => {
         if (confirm("Weet je zeker dat je je hele schema wilt wissen en opnieuw wilt beginnen?")) {
             setResetting(true);
-            localStorage.removeItem('amsterdam_coach_profile');
-            localStorage.removeItem('amsterdam_coach_plan');
+            localStorage.removeItem('marathon_coach_profile');
+            localStorage.removeItem('marathon_coach_plan');
             window.location.reload();
         }
     };
@@ -25,7 +25,7 @@ const Profile = () => {
         setTimeout(() => {
             const newPlan = generateTrainingPlan(userProfile);
             setTrainingPlan(newPlan);
-            localStorage.setItem('amsterdam_coach_plan', JSON.stringify(newPlan));
+            localStorage.setItem('marathon_coach_plan', JSON.stringify(newPlan));
             setUpdating(false);
             alert("Je schema is geactualiseerd met de nieuwe coach-instructies!");
         }, 1000);

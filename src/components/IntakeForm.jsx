@@ -112,7 +112,7 @@ const IntakeForm = ({ onComplete }) => {
             }
         };
 
-        localStorage.setItem('amsterdam_coach_profile', JSON.stringify(profile));
+        localStorage.setItem('marathon_coach_profile', JSON.stringify(profile));
         setUserProfile(profile);
         onComplete();
     };

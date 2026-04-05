@@ -74,7 +74,7 @@ const WorkoutDetail = ({ workout, onBack }) => {
 
         // 5. Save and return
         setTrainingPlan(updatedPlan);
-        localStorage.setItem('amsterdam_coach_plan', JSON.stringify(updatedPlan));
+        localStorage.setItem('marathon_coach_plan', JSON.stringify(updatedPlan));
         onBack();
     };
 

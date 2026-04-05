@@ -15,8 +15,8 @@ function App() {
 
   // Initial load
   useEffect(() => {
-    const savedProfile = localStorage.getItem('amsterdam_coach_profile');
-    const savedPlan = localStorage.getItem('amsterdam_coach_plan');
+    const savedProfile = localStorage.getItem('marathon_coach_profile');
+    const savedPlan = localStorage.getItem('marathon_coach_plan');
 
     if (savedProfile && savedPlan) {
       setUserProfile(JSON.parse(savedProfile));
@@ -31,13 +31,13 @@ function App() {
     // Simulate thinking time for effect
     setTimeout(() => {
       // UserProfile is already in Context & localStorage thanks to IntakeForm
-      const profileStr = localStorage.getItem('amsterdam_coach_profile');
+      const profileStr = localStorage.getItem('marathon_coach_profile');
       if (profileStr) {
         const profile = JSON.parse(profileStr);
         const plan = generateTrainingPlan(profile);
 
         setTrainingPlan(plan);
-        localStorage.setItem('amsterdam_coach_plan', JSON.stringify(plan));
+        localStorage.setItem('marathon_coach_plan', JSON.stringify(plan));
 
         setView('dashboard');
       }
