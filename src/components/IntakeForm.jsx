@@ -23,6 +23,9 @@ const IntakeForm = ({ onComplete }) => {
         avgPaceSec: '00',
 
         // Step 3: Goal
+        raceName: '',
+        raceDistance: '21.1',
+        raceDate: '2026-10-18',
         targetTimeHour: 2,
         targetTimeMin: 0,
 
@@ -91,7 +94,9 @@ const IntakeForm = ({ onComplete }) => {
                 recentRace: formData.recentRace,
             },
             goal: {
-                raceDate: "2026-10-18T00:00:00.000Z",
+                raceName: formData.raceName || 'Mijn Wedstrijd',
+                raceDistance: Number(formData.raceDistance),
+                raceDate: new Date(formData.raceDate).toISOString(),
                 targetTimeMinutes: Number(formData.targetTimeHour) * 60 + Number(formData.targetTimeMin),
             },
             preferences: {
@@ -199,9 +204,26 @@ const IntakeForm = ({ onComplete }) => {
                 {/* STEP 3: GOAL */}
                 {step === 3 && (
                     <div className="fade-in">
-                        <div style={{ padding: '1rem', backgroundColor: 'rgba(242, 79, 43, 0.1)', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem', border: '1px solid var(--primary-glow)' }}>
-                            <h3 style={{ color: 'var(--primary)', marginBottom: '0.5rem', fontSize: '1rem' }}>Doel: TCS Amsterdam Halve Marathon</h3>
-                            <p style={{ fontSize: '0.9rem', margin: 0 }}>Datum: Zondag 18 oktober 2026</p>
+                        <div className="input-group">
+                            <label className="input-label">Naam evenement / Doel (optioneel)</label>
+                            <input type="text" name="raceName" className="input-field" value={formData.raceName} onChange={handleChange} placeholder="bijv. Marathon van Rotterdam" />
+                        </div>
+
+                        <div className="input-group">
+                            <label className="input-label">Te lopen afstand (km) *</label>
+                            <select name="raceDistance" className="input-field" value={formData.raceDistance} onChange={handleChange}>
+                                <option value="5">5 km</option>
+                                <option value="10">10 km</option>
+                                <option value="15">15 km</option>
+                                <option value="16.1">10 Engelse Mijl (16.1 km)</option>
+                                <option value="21.1">Halve Marathon (21.1 km)</option>
+                                <option value="42.2">Marathon (42.2 km)</option>
+                            </select>
+                        </div>
+
+                        <div className="input-group">
+                            <label className="input-label">Datum evenement *</label>
+                            <input type="date" name="raceDate" className="input-field" value={formData.raceDate} onChange={handleChange} />
                         </div>
 
                         <div className="input-group">

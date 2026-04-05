@@ -1,5 +1,5 @@
 // ============================================================
-// AMSTERDAM HALVE MARATHON COACH - Plan Generator
+// MARATHON COACH - Plan Generator
 // Strikte, persoonsgebonden opbouw op basis van gebruikersinput
 // ============================================================
 
@@ -125,7 +125,8 @@ export function generateTrainingPlan(userProfile) {
     );
 
     // Bepaal de absolute max voor de lange duurloop vóór de wedstrijd
-    const MAX_LONG_RUN_BEFORE_RACE = wantsOnlyRaceDay21 ? 18 : 21.1;
+    // Meestal lopen we als langste duurloop ~85-95% van de wedstrijd, afhankelijk van afstand
+    const MAX_LONG_RUN_BEFORE_RACE = wantsOnlyRaceDay21 ? Math.min(goal.raceDistance * 0.85, goal.raceDistance - 3) : Math.min(goal.raceDistance, 35);
 
     for (let w = 1; w <= totalWeeks; w++) {
         const weeksLeft = totalWeeks - w;
@@ -155,9 +156,9 @@ export function generateTrainingPlan(userProfile) {
         // ---- LANGE DUURLOOP PROGRESSIE ----
         let longRunThisWeek;
         if (isRaceWeek) {
-            longRunThisWeek = 21.1; // Wedstrijd: altijd 21.1
+            longRunThisWeek = goal.raceDistance; // Wedstrijd
         } else if (isTaper) {
-            longRunThisWeek = weeksLeft === 1 ? 8 : 12; // Taperweken: licht
+            longRunThisWeek = weeksLeft === 1 ? Math.max(goal.raceDistance * 0.35, 3) : Math.max(goal.raceDistance * 0.55, 5); // Taperweken: licht
         } else if (isDeload) {
             longRunThisWeek = Math.max(3, currentLongRun * 0.7);
         } else {
@@ -173,9 +174,9 @@ export function generateTrainingPlan(userProfile) {
         }
         longRunThisWeek = Math.round(longRunThisWeek * 10) / 10;
 
-        // Speciale wens: 21km twee weken voor de race
+        // Speciale wens: wedstrijdafstand twee weken voor de race
         if (wants21kmTwoWeeksBefore && weeksLeft === 2 && !isTaper) {
-            longRunThisWeek = 21.1;
+            longRunThisWeek = goal.raceDistance;
         }
 
         // Update tracker
@@ -196,20 +197,20 @@ export function generateTrainingPlan(userProfile) {
 
             // ---- WEDSTRIJD ----
             if (isRaceWeek && isLastDay) {
-                workoutType = '🏁 WEDSTRIJD: TCS Amsterdam Halve Marathon';
-                distance = 21.1;
+                workoutType = `🏁 WEDSTRIJD: ${goal.raceName || 'Jouw Doel'}`;
+                distance = goal.raceDistance;
                 targetPace = goal.targetTimeMinutes
-                    ? formatPace((goal.targetTimeMinutes * 60) / 21.1)
+                    ? formatPace((goal.targetTimeMinutes * 60) / goal.raceDistance)
                     : easyPace;
-                coachNote = 'Dit is jouw moment! Vertrouw op je training, loop de eerste 5 km rustig in en geniet van de sfeer in Amsterdam. Succes! 🧡';
+                coachNote = `Dit is jouw moment! Vertrouw op je training, loop de eerste km's rustig in en geniet van de sfeer. Succes! 🧡`;
             }
             // ---- LANGE DUURLOOP ----
             else if (isLastDay && !isRaceWeek) {
-                const isSpecialWeek = wants21kmTwoWeeksBefore && weeksLeft === 2 && longRunThisWeek >= 21;
+                const isSpecialWeek = wants21kmTwoWeeksBefore && weeksLeft === 2 && longRunThisWeek >= goal.raceDistance;
                 workoutType = isSpecialWeek
-                    ? '⭐ Lange Duurloop (Speciale Wens: 21km!)'
+                    ? `⭐ Lange Duurloop (Speciale Wens: ${goal.raceDistance}km!)`
                     : wantsOnlyRaceDay21
-                        ? 'Lange Duurloop (max ' + MAX_LONG_RUN_BEFORE_RACE + ' km voor race)'
+                        ? `Lange Duurloop (max ${Math.round(MAX_LONG_RUN_BEFORE_RACE)} km voor race)`
                         : 'Lange Duurloop';
                 distance = longRunThisWeek;
                 targetPace = longRunPace;

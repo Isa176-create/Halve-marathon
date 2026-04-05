@@ -77,11 +77,11 @@ const Profile = () => {
                 <h3 style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>Jouw Doel</h3>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                     <span style={{ color: 'var(--text-tertiary)' }}>Wedstrijd</span>
-                    <span style={{ fontWeight: 600 }}>TCS Amsterdam Halve</span>
+                    <span style={{ fontWeight: 600 }}>{userProfile.goal.raceName || 'Mijn Wedstrijd'} ({userProfile.goal.raceDistance} km)</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                     <span style={{ color: 'var(--text-tertiary)' }}>Datum</span>
-                    <span style={{ fontWeight: 600 }}>18 okt 2026</span>
+                    <span style={{ fontWeight: 600 }}>{userProfile.goal.raceDate ? new Date(userProfile.goal.raceDate).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' }) : '18 okt 2026'}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                     <span style={{ color: 'var(--text-tertiary)' }}>Doeltijd</span>

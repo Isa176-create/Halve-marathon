@@ -51,10 +51,10 @@ function App() {
           {view === 'welcome' && (
             <div style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'center' }}>
               <h1 className="title-gradient" style={{ marginBottom: '1rem' }}>
-                Amsterdam Halve Marathon Coach
+                Marathon Coach
               </h1>
               <p style={{ marginBottom: '2rem' }}>
-                Jouw persoonlijke, slimme hardloopschema richting 18 oktober 2026.
+                Jouw persoonlijke, slimme hardloopschema richting jouw doel.
               </p>
               <button
                 className="btn btn-primary"
@@ -73,7 +73,7 @@ function App() {
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
               <div className="pulse" style={{ width: 50, height: 50, borderRadius: '50%', backgroundColor: 'var(--primary)', marginBottom: '1rem' }}></div>
               <h2 className="title-gradient">Schema berekenen...</h2>
-              <p style={{ marginTop: '1rem', color: 'var(--text-secondary)' }}>Coach stelt jouw slimme pad richting 21.1 km samen.</p>
+              <p style={{ marginTop: '1rem', color: 'var(--text-secondary)' }}>Coach stelt jouw slimme pad richting je doel samen.</p>
             </div>
           )}
 
