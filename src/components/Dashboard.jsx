@@ -1,6 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { PlanContext, UserContext } from '../App';
-import WorkoutDetail from './WorkoutDetail';
 import WeatherWidget from './WeatherWidget';
 
 const Dashboard = () => {
@@ -10,7 +9,6 @@ const Dashboard = () => {
     const [currentWeek, setCurrentWeek] = useState(null);
     const [nextWorkout, setNextWorkout] = useState(null);
     const [daysUntilRace, setDaysUntilRace] = useState(0);
-    const [selectedWorkout, setSelectedWorkout] = useState(null);
 
     useEffect(() => {
         if (!trainingPlan || !userProfile) return;
@@ -39,13 +37,6 @@ const Dashboard = () => {
 
     return (
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', paddingBottom: '80px' }}>
-            
-            {selectedWorkout && (
-                <WorkoutDetail 
-                    workout={selectedWorkout} 
-                    onBack={() => setSelectedWorkout(null)} 
-                />
-            )}
 
             {/* Header / Countdown */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -102,10 +93,6 @@ const Dashboard = () => {
                         <div style={{ backgroundColor: 'rgba(0,0,0,0.2)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
                             <strong>Coach:</strong> {nextWorkout.coachNote}
                         </div>
-
-                        <button className="btn btn-primary" style={{ width: '100%', marginTop: '1.5rem' }} onClick={() => setSelectedWorkout(nextWorkout)}>
-                            Start Training
-                        </button>
                     </div>
                 ) : (
                     <div className="glass-panel" style={{ padding: 'var(--space-4)', textAlign: 'center', color: 'var(--success)' }}>
@@ -150,7 +137,7 @@ const Dashboard = () => {
                                     {workout.completed ? (
                                         <span style={{ color: 'var(--success)', fontSize: '1.25rem' }}>✓</span>
                                     ) : (
-                                        <button className="btn btn-secondary" style={{ padding: '0.4rem 1rem', fontSize: '0.85rem' }} onClick={() => setSelectedWorkout(workout)}>Open</button>
+                                        <span style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>Gepland</span>
                                     )}
                                 </div>
                             </div>
