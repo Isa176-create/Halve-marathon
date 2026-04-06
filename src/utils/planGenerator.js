@@ -80,43 +80,9 @@ export async function generateTrainingPlanWeek(profile) {
             currentLongRun = longRunKm;
         }
 
-        const restKm = Math.max(0, targetVolKm - longRunKm);
-        let runs = [];
+        // BOUW DE TRAINGINGEN OP BASIS VAN HET GEWENSTE AANTAL DAGEN
         
-        // Dag 1: Vlotte / Tempoloop (Voorheen Intervaltraining)
-        if (!isDeload && !isTaper && !isRaceWeek) {
-            let qualKm = Math.max(3, restKm * 0.4);
-            runs.push({
-                type: hasTimeGoal ? 'Tempoloop' : 'Middellange Duurloop (Vlot)',
-                distanceKm: qualKm,
-                targetPace: hasTimeGoal ? tempoPace : vlotPace,
-                coachNote: hasTimeGoal 
-                    ? `Loop op temposnelheid om te wennen aan je sub-doel tijd.` 
-                    : `Iets vlotter dan normaal (${vlotPace}) voor conditionele prikkel.`,
-                isHard: true
-            });
-        } else if (!isRaceWeek) {
-            runs.push({
-                type: 'Ontspannen duurloop',
-                distanceKm: Math.max(3, restKm * 0.4),
-                targetPace: easyPace,
-                coachNote: `Rustweek of taper. Let alleen op techniek en ademhaling.`,
-                isHard: false
-            });
-        }
-
-        // Dag 2: Middellange duurloop
-        if (!isRaceWeek || targetDaysPerWeek > 2) {
-            runs.push({
-                type: 'Middellange Duurloop',
-                distanceKm: Math.max(3, restKm * (isRaceWeek ? 1.0 : 0.6)),
-                targetPace: easyPace,
-                coachNote: `Rustig tempo, 70-75% inspanning. Comfortabel blijven ademen.`,
-                isHard: false
-            });
-        }
-
-        // Dag 3: Lange duurloop of Wedstrijd
+        // Dag 1: Lange Duurloop of Wedstrijd (Hoogste prioriteit)
         if (isRaceWeek) {
             runs.push({
                 type: `🏁 WEDSTRIJD: ${goal.raceName || 'Jouw Doel'}`,
@@ -135,15 +101,53 @@ export async function generateTrainingPlanWeek(profile) {
             });
         }
 
-        // Dag 4 (Optioneel)
-        if (targetDaysPerWeek >= 4 && !isRaceWeek) {
+        // Dag 2: Middellange duurloop (Altijd aanwezig tenzij men 1 dag per week traint)
+        if (targetDaysPerWeek >= 2) {
             runs.push({
-                type: 'Herstelloop',
-                distanceKm: Math.max(3, targetVolKm * 0.15),
-                targetPace: formatPace(avgPaceSec + 60), 
-                coachNote: `Bloedsomloop stimuleren, max 60% inspanning. Dit herstelt de spieren.`,
+                type: 'Ontspannen duurloop',
+                distanceKm: Math.max(3, restKm * (isRaceWeek ? 1.0 : 0.6)),
+                targetPace: easyPace,
+                coachNote: `Rustig tempo, 70-75% inspanning. Comfortabel blijven ademen.`,
                 isHard: false
             });
+        }
+
+        // Dag 3: Vlotte prikkel (mits geen deload/taper)
+        if (targetDaysPerWeek >= 3) {
+            if (!isDeload && !isTaper && !isRaceWeek) {
+                let qualKm = Math.max(3, restKm * 0.4);
+                runs.push({
+                    type: hasTimeGoal ? 'Tempoloop' : 'Middellange Duurloop (Vlot)',
+                    distanceKm: qualKm,
+                    targetPace: hasTimeGoal ? tempoPace : vlotPace,
+                    coachNote: hasTimeGoal 
+                        ? `Loop op temposnelheid om te wennen aan je sub-doel tijd.` 
+                        : `Iets vlotter dan normaal (${vlotPace}) voor conditionele prikkel.`,
+                    isHard: true
+                });
+            } else if (!isRaceWeek) {
+                runs.push({
+                    type: 'Ontspannen duurloop',
+                    distanceKm: Math.max(3, restKm * 0.4),
+                    targetPace: easyPace,
+                    coachNote: `Rustweek of taper. Let alleen op techniek en ademhaling.`,
+                    isHard: false
+                });
+            }
+        }
+
+        // Dag 4 t/m limiet (Optionele Herstellopen)
+        if (targetDaysPerWeek >= 4 && !isRaceWeek) {
+            const extraDays = targetDaysPerWeek - 3;
+            for (let e = 0; e < extraDays; e++) {
+                runs.push({
+                    type: 'Herstelloop',
+                    distanceKm: Math.max(2.5, targetVolKm * 0.10),
+                    targetPace: formatPace(avgPaceSec + 60), 
+                    coachNote: `Bloedsomloop stimuleren, max 60% inspanning. Dit herstelt de spieren.`,
+                    isHard: false
+                });
+            }
         }
 
         const workouts = [];

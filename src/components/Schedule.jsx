@@ -13,7 +13,7 @@ const Schedule = () => {
             </h1>
 
             <p style={{ color: 'var(--text-secondary)' }}>
-                Een overzicht van al je fasen en geplande trainingen richting 18 oktober 2026.
+                Een overzicht van al je fasen en geplande trainingen richting jouw doel.
             </p>
 
             {trainingPlan.weeks.map(week => (
@@ -23,7 +23,7 @@ const Schedule = () => {
                             Week {week.weekNumber} <span style={{ fontSize: '0.85rem', fontWeight: 400 }}>- {week.phase}</span>
                         </h3>
                         <span style={{ fontSize: '0.85rem', color: 'var(--text-tertiary)', backgroundColor: week.isDeload ? 'rgba(59, 130, 246, 0.2)' : 'transparent', padding: '0.1rem 0.4rem', borderRadius: 'var(--radius-sm)' }}>
-                            {week.isDeload && "Rustweek • "} {week.workouts.reduce((sum, w) => sum + Number(w.distanceKm), 0).toFixed(1)} km
+                            {week.isDeload && "Rustweek • "} {week.workouts.length} dagen • {week.workouts.reduce((sum, w) => sum + Number(w.distanceKm), 0).toFixed(1)} km
                         </span>
                     </div>
 
