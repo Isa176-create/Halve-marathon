@@ -80,6 +80,9 @@ export async function generateTrainingPlanWeek(profile) {
             currentLongRun = longRunKm;
         }
 
+        const restKm = Math.max(0, targetVolKm - longRunKm);
+        let runs = [];
+
         // BOUW DE TRAINGINGEN OP BASIS VAN HET GEWENSTE AANTAL DAGEN
         
         // Dag 1: Lange Duurloop of Wedstrijd (Hoogste prioriteit)
