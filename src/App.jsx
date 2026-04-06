@@ -80,7 +80,7 @@ function App() {
                     <div className="pulse" style={{ width: 50, height: 50, borderRadius: '50%', backgroundColor: 'var(--primary)', marginBottom: '1rem' }}></div>
                     <h2 className="title-gradient">Schema berekenen...</h2>
                     <p style={{ marginTop: '1rem', color: 'var(--text-secondary)', textAlign: 'center', padding: '0 1rem' }}>
-                      De AI coach analyseert je profiel en stelt je eerste week samen...
+                      Je schema wordt razendsnel berekend via onze offline trainingslogica...
                     </p>
                   </>
               ) : (
