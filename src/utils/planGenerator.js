@@ -38,117 +38,101 @@ export async function generateTrainingPlanWeek(profile) {
     const hasTimeGoal = goal.targetTimeMinutes && goal.targetTimeMinutes < 120;
 
     const weeksData = [];
-    let currentVolKm = currentLevel.weeklyKm || 15;
-    let currentLongRun = currentLevel.longestRun || 5;
+    
+    const goalKm = goal.raceDistance;
+    const weeklyNow = currentLevel.weeklyKm || 15;
+    const currentLong = currentLevel.longestRun || 5;
+
+    // Stap 1 - Limieten bepalen
+    const maxTrainingLong = goalKm * 0.90;
+    const targetWeekly = maxTrainingLong / 0.30;
+    const taperWeeks = 2;
+    const buildWeeks = Math.max(1, totalWeeks - taperWeeks);
+
+    // Stap 2 - Benodigde wekelijkse stijging
+    const linearNeeded = (targetWeekly - weeklyNow) / buildWeeks;
+
+    let prevWeekVol = weeklyNow;
+    let lastBuildVol = weeklyNow;
 
     let weekStartDate = new Date(startDate);
     weekStartDate.setDate(weekStartDate.getDate() - (weekStartDate.getDay() || 7) + 1);
 
     for (let w = 1; w <= totalWeeks; w++) {
-        const isTaper = w >= totalWeeks - 1;
         const isRaceWeek = w === totalWeeks;
-        const isDeload = [4, 8, 11].includes(w) && !isTaper && !isRaceWeek;
+        const isTaper = w > totalWeeks - taperWeeks;
+        let isDeload = false;
+        let weekVol = 0;
 
-        // ++ VOLUME BEREKENEN ++
-        if (w > 1) {
-            if (isRaceWeek) {
-                currentVolKm = currentVolKm * 0.5;
-            } else if (isTaper) {
-                currentVolKm = currentVolKm * 0.7;
-            } else if (isDeload) {
-                currentVolKm = currentVolKm * 0.75;
+        // Stap 3 - Weekvolume per week berekenen
+        if (isTaper) {
+            let taperWeekNumber = w - (totalWeeks - taperWeeks);
+            if (taperWeekNumber === 1 && taperWeeks >= 1) {
+                weekVol = lastBuildVol * 0.80;
+            } else if (taperWeekNumber === 2 && taperWeeks >= 2) {
+                weekVol = lastBuildVol * 0.65;
             } else {
-                currentVolKm = currentVolKm * 1.10; // Max 10% erbij
-                currentVolKm = Math.min(60, currentVolKm); // Veilige cap
+                weekVol = lastBuildVol * 0.65;
             }
-        }
-        
-        let targetVolKm = currentVolKm;
-
-        // ++ LANGE DUURLOOP BEREKENEN ++
-        let longRunKm;
-        if (isRaceWeek) {
-            longRunKm = goal.raceDistance;
-        } else if (isTaper) {
-            longRunKm = Math.max(goal.raceDistance * 0.4, 5);
-        } else if (isDeload) {
-            longRunKm = Math.max(currentLongRun * 0.8, 3);
+        } else if (w % 4 === 0) {
+            isDeload = true;
+            weekVol = prevWeekVol * 0.80;
         } else {
-            longRunKm = Math.min(currentLongRun * 1.15, targetVolKm * 0.45);
-            if (w === 1) longRunKm = currentLevel.longestRun || 5; 
-            longRunKm = Math.min(longRunKm, goal.raceDistance * 0.90);
-            currentLongRun = longRunKm;
+            let stijging = Math.min(linearNeeded, prevWeekVol * 0.15);
+            weekVol = Math.min(prevWeekVol + stijging, targetWeekly);
+            lastBuildVol = weekVol;
         }
 
-        const restKm = Math.max(0, targetVolKm - longRunKm);
-        let runs = [];
+        prevWeekVol = weekVol;
 
-        // BOUW DE TRAINGINGEN OP BASIS VAN HET GEWENSTE AANTAL DAGEN
+        // Stap 4 - Sessieverdeling per week
+        let runs = [];
+        let daysPerWeek = targetDaysPerWeek;
+        let longRun = Math.min(weekVol * 0.30, goalKm * 0.90);
+        let otherSessionsCount = Math.max(1, daysPerWeek - 1);
+        let sessionKm = Math.min((weekVol - longRun) / otherSessionsCount, goalKm);
         
-        // Dag 1: Lange Duurloop of Wedstrijd (Hoogste prioriteit)
+        let werkelijkWeekVol = longRun + (sessionKm * otherSessionsCount);
+
+        // Stap 5 - Race day vs Normale week
         if (isRaceWeek) {
             runs.push({
                 type: `🏁 WEDSTRIJD: ${goal.raceName || 'Jouw Doel'}`,
-                distanceKm: goal.raceDistance,
-                targetPace: hasTimeGoal ? formatPace((goal.targetTimeMinutes * 60) / goal.raceDistance) : easyPace,
+                distanceKm: goalKm,
+                targetPace: hasTimeGoal ? formatPace((goal.targetTimeMinutes * 60) / goalKm) : easyPace,
                 coachNote: `Dit is jouw moment! Vertrouw op je training en geniet. Succes! 🧡`,
                 isHard: true
             });
         } else {
             runs.push({
                 type: 'Lange Duurloop',
-                distanceKm: longRunKm,
+                distanceKm: longRun,
                 targetPace: longRunPace,
                 coachNote: `De langste run van de week. Tijd op je benen doorbrengen is het doel, niet de snelheid.`,
                 isHard: true
             });
-        }
 
-        // Dag 2: Middellange duurloop (Altijd aanwezig tenzij men 1 dag per week traint)
-        if (targetDaysPerWeek >= 2) {
-            runs.push({
-                type: 'Ontspannen duurloop',
-                distanceKm: Math.max(3, restKm * (isRaceWeek ? 1.0 : 0.6)),
-                targetPace: easyPace,
-                coachNote: `Rustig tempo, 70-75% inspanning. Comfortabel blijven ademen.`,
-                isHard: false
-            });
-        }
-
-        // Dag 3: Vlotte prikkel (mits geen deload/taper)
-        if (targetDaysPerWeek >= 3) {
-            if (!isDeload && !isTaper && !isRaceWeek) {
-                let qualKm = Math.max(3, restKm * 0.4);
-                runs.push({
-                    type: hasTimeGoal ? 'Tempoloop' : 'Middellange Duurloop (Vlot)',
-                    distanceKm: qualKm,
-                    targetPace: hasTimeGoal ? tempoPace : vlotPace,
-                    coachNote: hasTimeGoal 
+            for (let i = 0; i < otherSessionsCount; i++) {
+                let runType = 'Ontspannen duurloop';
+                let tPace = easyPace;
+                let cNote = `Rustig tempo, 70-75% inspanning. Comfortabel blijven ademen.`;
+                let isHard = false;
+                
+                if (i === 0 && targetDaysPerWeek >= 3 && !isDeload && !isTaper) {
+                    runType = hasTimeGoal ? 'Tempoloop' : 'Middellange Duurloop (Vlot)';
+                    tPace = hasTimeGoal ? tempoPace : vlotPace;
+                    cNote = hasTimeGoal 
                         ? `Loop op temposnelheid om te wennen aan je sub-doel tijd.` 
-                        : `Iets vlotter dan normaal (${vlotPace}) voor conditionele prikkel.`,
-                    isHard: true
-                });
-            } else if (!isRaceWeek) {
+                        : `Iets vlotter dan normaal (${vlotPace}) voor conditionele prikkel.`;
+                    isHard = true;
+                }
+                
                 runs.push({
-                    type: 'Ontspannen duurloop',
-                    distanceKm: Math.max(3, restKm * 0.4),
-                    targetPace: easyPace,
-                    coachNote: `Rustweek of taper. Let alleen op techniek en ademhaling.`,
-                    isHard: false
-                });
-            }
-        }
-
-        // Dag 4 t/m limiet (Optionele Herstellopen)
-        if (targetDaysPerWeek >= 4 && !isRaceWeek) {
-            const extraDays = targetDaysPerWeek - 3;
-            for (let e = 0; e < extraDays; e++) {
-                runs.push({
-                    type: 'Herstelloop',
-                    distanceKm: Math.max(2.5, targetVolKm * 0.10),
-                    targetPace: formatPace(avgPaceSec + 60), 
-                    coachNote: `Bloedsomloop stimuleren, max 60% inspanning. Dit herstelt de spieren.`,
-                    isHard: false
+                    type: runType,
+                    distanceKm: sessionKm,
+                    targetPace: tPace,
+                    coachNote: cNote,
+                    isHard: isHard
                 });
             }
         }
@@ -160,6 +144,11 @@ export async function generateTrainingPlanWeek(profile) {
             let dayOffset = dayIndices[i % dayIndices.length];
             let workoutDate = new Date(weekStartDate);
             workoutDate.setDate(workoutDate.getDate() + (dayOffset === 0 ? 6 : dayOffset - 1));
+
+            // Zorg dat de wedstrijd exact op de raceDate valt
+            if (isRaceWeek && runs[i].type.includes('WEDSTRIJD')) {
+                workoutDate = new Date(raceDate);
+            }
 
             workouts.push({
                 id: `w${w}-${i}`,
@@ -179,21 +168,25 @@ export async function generateTrainingPlanWeek(profile) {
         if (isTaper) phase = "Taper / Afbouwen";
         if (isRaceWeek) phase = "Wedstrijdweek";
 
+        let weekNotes = [];
+        if (isRaceWeek) {
+            weekNotes.push("Het is zover! Focus op rust voor de grote dag.");
+        } else {
+            weekNotes.push(`Lange run deze week: ${longRun.toFixed(1)} km.`);
+        }
+        
+        if (w === 1 && (linearNeeded > (weeklyNow * 0.15))) {
+            weekNotes.push("⚠️ Schema is ambitieus, overweeg meer weken of lagere startbasis");
+        }
+
         weeksData.push({
             weekNumber: w,
             phase: phase,
             isDeload: isDeload,
             weeklyVolumeKm: totaal_km.toFixed(1),
-            weekNotes: [
-                isRaceWeek ? "Het is zover! Focus op rust voor de grote dag." : `Lange run deze week: ${longRunKm.toFixed(1)} km.`
-            ],
+            weekNotes: weekNotes,
             workouts: workouts
         });
-
-        // Herstel volume berekening voor correcte start van volgende block na deload
-        if (isDeload) {
-            currentVolKm = currentVolKm / 0.75; 
-        }
 
         // Verzet weekdatum
         weekStartDate.setDate(weekStartDate.getDate() + 7);

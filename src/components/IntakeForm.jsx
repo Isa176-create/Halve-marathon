@@ -4,20 +4,13 @@ import { UserContext } from '../App';
 const IntakeForm = ({ onComplete }) => {
     const { setUserProfile } = useContext(UserContext);
     const [step, setStep] = useState(1);
-    const totalSteps = 5;
+    const totalSteps = 4;
 
     // Form State
     const [formData, setFormData] = useState({
-        // Step 1: Physical
-        height: '',
-        weight: '',
-        age: '',
-        gender: 'onbekend',
-
-        // Step 2: Level
+        // Step 1: Level
         runsPerWeek: '',
         weeklyKm: '',
-        seasonKm: '',
         longestRunEver: '',
         recentMaxRun: '',
         avgPaceMin: '',
@@ -79,16 +72,11 @@ const IntakeForm = ({ onComplete }) => {
     const submitForm = () => {
         const profile = {
             physical: {
-                height: Number(formData.height),
-                weight: Number(formData.weight),
-                age: Number(formData.age),
-                gender: formData.gender,
-                weightHistory: [{ date: new Date().toISOString(), weight: Number(formData.weight) }]
+                // Verwijderd conform verzoek
             },
             currentLevel: {
                 runsPerWeek: Number(formData.runsPerWeek),
                 weeklyKm: Number(formData.weeklyKm),
-                seasonKm: Number(formData.seasonKm),
                 longestRunEver: Number(formData.longestRunEver),   // Ooit gelopen
                 longestRun: Number(formData.recentMaxRun),         // Afgelopen 4 weken (zwaarder gewogen)
                 recentMaxRun: Number(formData.recentMaxRun),       // Zelfde, voor duidelijkheid in generator
@@ -124,44 +112,17 @@ const IntakeForm = ({ onComplete }) => {
             <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h2 className="title-gradient">Stap {step} van {totalSteps}</h2>
                 <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                    {step === 1 && "Fysieke Basis"}
-                    {step === 2 && "Huidig Niveau"}
-                    {step === 3 && "Het Doel"}
-                    {step === 4 && "Agenda & Voorkeur"}
-                    {step === 5 && "Veiligheid"}
+                    {step === 1 && "Huidig Niveau"}
+                    {step === 2 && "Het Doel"}
+                    {step === 3 && "Agenda & Voorkeur"}
+                    {step === 4 && "Veiligheid"}
                 </div>
             </div>
 
             <div style={{ flex: 1, overflowY: 'auto', paddingRight: '0.5rem', paddingBottom: '1rem' }}>
 
-                {/* STEP 1: PHYSICAL */}
+                {/* STEP 1: LEVEL */}
                 {step === 1 && (
-                    <div className="fade-in">
-                        <div className="input-group">
-                            <label className="input-label">Lengte (cm)</label>
-                            <input type="number" name="height" className="input-field" value={formData.height} onChange={handleChange} />
-                        </div>
-                        <div className="input-group">
-                            <label className="input-label">Gewicht (kg)</label>
-                            <input type="number" name="weight" className="input-field" value={formData.weight} onChange={handleChange} step="0.1" />
-                        </div>
-                        <div className="input-group">
-                            <label className="input-label">Leeftijd</label>
-                            <input type="number" name="age" className="input-field" value={formData.age} onChange={handleChange} />
-                        </div>
-                        <div className="input-group">
-                            <label className="input-label">Geslacht (Optioneel)</label>
-                            <select name="gender" className="input-field" value={formData.gender} onChange={handleChange}>
-                                <option value="onbekend">Zeg ik liever niet</option>
-                                <option value="man">Man</option>
-                                <option value="vrouw">Vrouw</option>
-                            </select>
-                        </div>
-                    </div>
-                )}
-
-                {/* STEP 2: LEVEL */}
-                {step === 2 && (
                     <div className="fade-in">
                         <div className="input-group">
                             <label className="input-label">Gemiddeld km per week (afgelopen 4 weken) *</label>
@@ -180,11 +141,6 @@ const IntakeForm = ({ onComplete }) => {
                         <div className="input-group">
                             <label className="input-label">Aantal runs per week (afgelopen 4 weken) *</label>
                             <input type="number" name="runsPerWeek" className="input-field" value={formData.runsPerWeek} onChange={handleChange} min="0" max="7" placeholder="bijv. 3" />
-                        </div>
-                        <div className="input-group">
-                            <label className="input-label">Km gelopen dit seizoen (ongeveer) *</label>
-                            <input type="number" name="seasonKm" className="input-field" value={formData.seasonKm} onChange={handleChange} min="0" placeholder="bijv. 150" />
-                            <small style={{ color: 'var(--text-tertiary)', fontSize: '0.8rem' }}>Geeft de coach een beeld van je basis.</small>
                         </div>
                         <div className="input-group">
                             <label className="input-label">Langste run afgelopen 4 weken (km) *</label>
@@ -208,8 +164,8 @@ const IntakeForm = ({ onComplete }) => {
                     </div>
                 )}
 
-                {/* STEP 3: GOAL */}
-                {step === 3 && (
+                {/* STEP 2: GOAL */}
+                {step === 2 && (
                     <div className="fade-in">
                         <div className="input-group">
                             <label className="input-label">Naam evenement / Doel (optioneel)</label>
@@ -256,8 +212,8 @@ const IntakeForm = ({ onComplete }) => {
                     </div>
                 )}
 
-                {/* STEP 4: SCHEDULE */}
-                {step === 4 && (
+                {/* STEP 3: SCHEDULE */}
+                {step === 3 && (
                     <div className="fade-in">
                         <div className="input-group">
                             <label className="input-label">Aantal trainingen per week (doel)</label>
@@ -313,8 +269,8 @@ const IntakeForm = ({ onComplete }) => {
                     </div>
                 )}
 
-                {/* STEP 5: MEDICAL */}
-                {step === 5 && (
+                {/* STEP 4: MEDICAL */}
+                {step === 4 && (
                     <div className="fade-in">
                         <div className="input-group">
                             <label className="input-label" style={{ color: 'var(--warning)' }}>Heb je actuele pijntjes of een blessuregeschiedenis?</label>
